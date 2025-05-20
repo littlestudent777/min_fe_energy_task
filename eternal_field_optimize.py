@@ -49,6 +49,7 @@ class FieldEnergyOptimizer:
         return x, f_val
 
 
+# Generate random H vectors to run test
 H_array = [np.random.uniform(-10, 10, 3) for _ in range(10)]
 M_s = 1.707  # in 10^3 emu/cc
 
