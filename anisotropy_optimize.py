@@ -5,13 +5,20 @@ INIT_BIG_VAL = 1e+10
 
 
 class AnisotropyOptimizer:
+    """Optimizer for anisotropic energy minimization.
+    Finds the equilibrium orientation of magnetization"""
     def __init__(self, K1, K2, num_trials=3):
         self.K1 = K1
         self.K2 = K2
         self.num_trials = num_trials
+        self.f = self._f_without_K2 if K2 is None else self._f_with_K2
 
-    def f(self, x):
-        """Objective function F(x) (anisotropy energy for given parameters) -> min"""
+    def _f_without_K2(self, x):
+        x1, x2, x3 = x
+        cross_terms = x1 ** 2 * x2 ** 2 + x2 ** 2 * x3 ** 2 + x3 ** 2 * x1 ** 2
+        return self.K1 * cross_terms
+
+    def _f_with_K2(self, x):
         x1, x2, x3 = x
         cross_terms = x1 ** 2 * x2 ** 2 + x2 ** 2 * x3 ** 2 + x3 ** 2 * x1 ** 2
         cubic_term = x1 ** 2 * x2 ** 2 * x3 ** 2
@@ -42,7 +49,6 @@ class AnisotropyOptimizer:
         result = {
             'solution': None,
             'function_value': None,
-            'nit': None
         }
 
         best_func_val = INIT_BIG_VAL  # Initialization of value that will be compared
@@ -59,14 +65,14 @@ class AnisotropyOptimizer:
                 fun=self.f,
                 x0=x0,
                 method='SLSQP',
-                # Added bounds, because without them SQP sometimes moves to inf and returns nan
-                bounds=[(-1.1, 1.1) for _ in range(3)],  # Bounds are a bit wider than expected
+                # Added bounds, because without them SQP sometimes moves out of constraints
+                bounds=[(-1.1, 1.1) for _ in range(3)],  # Bounds are a bit wider than expected just in case
                 constraints=constraints,
                 options=options
             )
 
-            # Projection onto the surface of a sphere (in case the method has deviated from the boundary)
-            x_opt = res.x / np.linalg.norm(res.x) if self.constraint(res.x) > 0 else res.x
+            # Projection onto the surface of a sphere (in case method has deviated from the boundary)
+            x_opt = res.x / np.linalg.norm(res.x) if self.constraint(res.x) > tol else res.x
 
             # Normalizing results to compare with expected ones
             x_opt_cube = x_opt / np.linalg.norm(x_opt, np.inf)
@@ -79,6 +85,5 @@ class AnisotropyOptimizer:
 
                 result['solution'] = x_opt_cube
                 result['function_value'] = self.f(x_opt)
-                result['nit'] = res.nit
 
         return result

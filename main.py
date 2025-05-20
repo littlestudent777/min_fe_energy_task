@@ -2,6 +2,8 @@ import anisotropy_optimize as my
 
 param_combinations = [
     # (K1, K2)     (expected result)
+    (4.2, None),    # (100)
+    (-4.2, None),   # (111)
     (4.2, 1.5),     # (100)
     (1.0, -4.5),    # (100)
     (1.0, -10.0),   # (111)
@@ -18,5 +20,4 @@ for K1, K2 in param_combinations:
 
     print(f"  f(x) = {result['function_value']:.6f}")
     print(f"  Solution: {[f'{x:.3f}' for x in result['solution']]}")
-    print(f"  Iterations: {result['nit']}")
     print()
