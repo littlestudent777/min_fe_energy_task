@@ -5,12 +5,11 @@ INIT_BIG_VAL = 1e+10
 
 
 class AnisotropyOptimizer:
-    """Optimizer for anisotropic energy minimization.
+    """Optimizer for anisotropic energy density minimization.
     Finds the equilibrium orientation of magnetization"""
-    def __init__(self, K1, K2, num_trials=3):
+    def __init__(self, K1, K2):
         self.K1 = K1
         self.K2 = K2
-        self.num_trials = num_trials
         self.f = self._f_without_K2 if K2 is None else self._f_with_K2
 
     def _f_without_K2(self, x):
@@ -30,7 +29,7 @@ class AnisotropyOptimizer:
             because the components of x are direction cosines"""
         return np.sum(x ** 2) - 1.0
 
-    def optimize(self, tol=1e-6, max_iter=1000):
+    def optimize(self, tol=1e-6, max_iter=1000, num_trials=3):
         """Solves optimization problem with SLSQP method.
          Runs optimization [num_trials] times, then chooses the best min"""
 
@@ -53,7 +52,7 @@ class AnisotropyOptimizer:
 
         best_func_val = INIT_BIG_VAL  # Initialization of value that will be compared
 
-        for trial in range(self.num_trials):
+        for trial in range(num_trials):
 
             # Random initial point (Function is not strictly convex, that leads to several local minimum values.
             # Choosing different initial points will lead to different results).
@@ -90,14 +89,15 @@ class AnisotropyOptimizer:
 
 
 param_combinations = [
-    (4.2, None),    # (100)
-    (-4.2, None),   # (111)
-    (4.2, 1.5),     # (100)
-    (1.0, -4.5),    # (100)
-    (1.0, -10.0),   # (111)
-    (-1.0, -10.0),  # (111)
-    (-1.0, 4.5),    # (110)
-    (-1.0, 10.0)    # (110)
+# (K1,K2) * 1e+5 ergs/cc, (expected result)
+    (4.2, None),         # (100)
+    (-4.2, None),        # (111)
+    (4.2, 1.5),          # (100)
+    (1.0, -4.5),         # (100)
+    (1.0, -10.0),        # (111)
+    (-1.0, -10.0),       # (111)
+    (-1.0, 4.5),         # (110)
+    (-1.0, 10.0)         # (110)
 ]
 
 for K1, K2 in param_combinations:
@@ -105,5 +105,5 @@ for K1, K2 in param_combinations:
     optimizer = AnisotropyOptimizer(K1, K2)
     result = optimizer.optimize()
 
-    print(f"f(x) = {result['function_value']:.6f}")
+    print(f"f(x) = {result['function_value']:.6f} * 10^5 ergs/cc")
     print(f"Solution: {[f'{x:.3f}' for x in result['solution']]}")

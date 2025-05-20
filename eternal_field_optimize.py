@@ -59,4 +59,4 @@ for H in H_array:
     result = optimizer.projected_gradient()
 
     print(f"Solution: {[f'{x:.3f}' for x in result[0]]}")
-    print(f"F(x) = {result[1]:.6f}")
+    print(f"f(x) = {result[1]:.6f} * 10^3 ergs/cc")
