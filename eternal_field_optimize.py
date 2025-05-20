@@ -15,15 +15,11 @@ class FieldEnergyOptimizer:
         """Objective function F(x) -> min"""
         return - self.M_s * np.dot(x, self.H)
 
-    @staticmethod
-    def constraint(x):
-        """Returns value on constraint equation: phi(x) = 0 """
-        return np.linalg.norm(x) - 1.0
-
     def projection(self, x):
         """Check if the point lies within the bounds.
             If not - return its projection."""
-        if abs(self.constraint(x)) > self.tol:
+        constraint = sum(x ** 2) - 1
+        if abs(constraint) > self.tol:
             # Euclidean norm
             return x / np.linalg.norm(x)
         else:
@@ -32,21 +28,23 @@ class FieldEnergyOptimizer:
     def projected_gradient(self, max_iter=1000):
         """Gradient projection method
         Constant step was chosen, because function is linear and steepest descent wouldn't work with it
-        """
-        x_prev = np.random.sample(3)
-        x = self.projection(x_prev)
 
-        step = 1
+        Returns:
+        tuple: (optimal point, function value at that point)
+        """
+        # Random start point
+        x = self.projection(np.random.sample(3))
+
+        step = 1.0
 
         for it in range(max_iter):
-            x = self.projection(x - step * self.grad_f)
-            if np.linalg.norm(x - x_prev) < self.tol:
+            x_new = self.projection(x - step * self.grad_f)
+            if np.linalg.norm(x_new - x) < self.tol:
+                x = x_new
                 break
-            x_prev = x
+            x = x_new
 
-        f_val = self.f(x)
-
-        return x, f_val
+        return x, self.f(x)
 
 
 # Generate random H vectors to run test
