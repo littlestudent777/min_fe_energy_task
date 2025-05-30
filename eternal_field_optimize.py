@@ -36,9 +36,10 @@ class FieldEnergyOptimizer:
         x = self.projection(np.random.sample(3))
 
         step = 1.0
-
+        direction = - self.grad_f  # Antigradient
+        
         for it in range(max_iter):
-            x_new = self.projection(x - step * self.grad_f)
+            x_new = self.projection(x + step * direction)
             if np.linalg.norm(x_new - x) < self.tol:
                 x = x_new
                 break
