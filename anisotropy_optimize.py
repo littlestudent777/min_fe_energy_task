@@ -73,17 +73,16 @@ class AnisotropyOptimizer:
             # Projection onto the surface of a sphere (in case method has deviated from the boundary)
             x_opt = res.x / np.linalg.norm(res.x) if self.constraint(res.x) > tol else res.x
 
-            # Normalizing results to compare with expected ones
-            x_opt_cube = x_opt / np.linalg.norm(x_opt, np.inf)
-
             func_val = self.f(x_opt)
 
             # Result will be the minimal value within trials
             if func_val < best_func_val:
                 best_func_val = func_val
 
+                # Normalizing results to compare with expected ones
+                x_opt_cube = x_opt / np.linalg.norm(x_opt, np.inf)
                 result['solution'] = x_opt_cube
-                result['function_value'] = self.f(x_opt)
+                result['function_value'] = func_val
 
         return result
 
